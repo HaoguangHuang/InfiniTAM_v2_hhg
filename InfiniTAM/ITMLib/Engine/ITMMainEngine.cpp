@@ -116,7 +116,7 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	if (!mainProcessingActive) return;
 
 	// tracking
-	trackingController->Track(trackingState, view);
+	trackingController->Track(trackingState, view); //ICP,get transformation between current frame and fusioned model
 
 	// fusion
 	if (fusionActive) denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);

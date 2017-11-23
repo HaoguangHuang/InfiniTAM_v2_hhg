@@ -105,14 +105,14 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 	pt_camera_f.x = pt_camera_f.z * ((float(x) - projParams.z) * projParams.x);
 	pt_camera_f.y = pt_camera_f.z * ((float(y) - projParams.w) * projParams.y);
 	pt_camera_f.w = 1.0f;
-	totalLength = length(TO_VECTOR3(pt_camera_f)) * oneOverVoxelSize;
-	pt_block_s = TO_VECTOR3(invM * pt_camera_f) * oneOverVoxelSize;
+	totalLength = length(TO_VECTOR3(pt_camera_f)) * oneOverVoxelSize; // raycast start position
+	pt_block_s = TO_VECTOR3(invM * pt_camera_f) * oneOverVoxelSize; // invM:transformation from camera to model
 
 	pt_camera_f.z = viewFrustum_minmax.y;
 	pt_camera_f.x = pt_camera_f.z * ((float(x) - projParams.z) * projParams.x);
 	pt_camera_f.y = pt_camera_f.z * ((float(y) - projParams.w) * projParams.y);
 	pt_camera_f.w = 1.0f;
-	totalLengthMax = length(TO_VECTOR3(pt_camera_f)) * oneOverVoxelSize;
+	totalLengthMax = length(TO_VECTOR3(pt_camera_f)) * oneOverVoxelSize; // raycast end position
 	pt_block_e = TO_VECTOR3(invM * pt_camera_f) * oneOverVoxelSize;
 
 	rayDirection = pt_block_e - pt_block_s;
@@ -123,7 +123,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 
 	typename TIndex::IndexCache cache;
 
-	while (totalLength < totalLengthMax) {
+	while (totalLength < totalLengthMax) { //mm
 		sdfValue = readFromSDF_float_uninterpolated(voxelData, voxelIndex, pt_result, hash_found, cache);
 
 		if (!hash_found) {
@@ -156,7 +156,7 @@ _CPU_AND_GPU_CODE_ inline bool castRay(DEVICEPTR(Vector4f) &pt_out, int x, int y
 
 	return pt_found;
 }
-
+//this function return a global id of a image
 _CPU_AND_GPU_CODE_ inline int forwardProjectPixel(Vector4f pixel, const CONSTPTR(Matrix4f) &M, const CONSTPTR(Vector4f) &projParams,
 	const THREADPTR(Vector2i) &imgSize)
 {

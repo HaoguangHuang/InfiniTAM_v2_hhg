@@ -15,7 +15,7 @@ _CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &
 	int oldW, newW;
 
 	// project point into image
-	pt_camera = M_d * pt_model;
+	pt_camera = M_d * pt_model;  //transform model coo into camera coo
 	if (pt_camera.z <= 0) return -1;
 
 	pt_image.x = projParams_d.x * pt_camera.x / pt_camera.z + projParams_d.z;
@@ -28,12 +28,12 @@ _CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &
 
 	// check whether voxel needs updating
 	eta = depth_measure - pt_camera.z;
-	if (eta < -mu) return eta;
+	if (eta < -mu) return eta; // mu:truncated band
 
 	// compute updated SDF value and reliability
 	oldF = TVoxel::SDF_valueToFloat(voxel.sdf); oldW = voxel.w_depth;
 
-	newF = MIN(1.0f, eta / mu);
+	newF = MIN(1.0f, eta / mu); // closer is better
 	newW = 1;
 
 	newF = oldW * oldF + newW * newF;

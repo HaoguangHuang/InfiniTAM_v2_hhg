@@ -19,7 +19,7 @@ namespace ITMLib
 			/// Intrinsic calibration information for the view.
 			ITMRGBDCalib *calib;
 
-			/// RGB colour image.
+			/// RGB colour image.x
 			ITMUChar4Image *rgb; 
 
 			/// Float valued depth image, if available according to @ref inputImageType.

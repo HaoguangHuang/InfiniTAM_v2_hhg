@@ -10,9 +10,9 @@ using namespace ITMLib::Engine;
 
 void ITMTrackingController::Track(ITMTrackingState *trackingState, const ITMView *view)
 {
-	if (trackingState->age_pointCloud!=-1) tracker->TrackCamera(trackingState, view);   //this is depth hierarchy ICP
+	if (trackingState->age_pointCloud!=-1/*the first frame*/) tracker->TrackCamera(trackingState, view);   //this is depth hierarchy ICP
 
-	trackingState->requiresFullRendering = trackingState->TrackerFarFromPointCloud() || !settings->useApproximateRaycast;
+	trackingState->requiresFullRendering = trackingState->TrackerFarFromPointCloud() || !settings->useApproximateRaycast;   //useless
 }
 
 void ITMTrackingController::Prepare(ITMTrackingState *trackingState, const ITMView *view, ITMRenderState *renderState)
@@ -28,7 +28,7 @@ void ITMTrackingController::Prepare(ITMTrackingState *trackingState, const ITMVi
 	}
 	else
 	{
-		visualisationEngine->CreateExpectedDepths(trackingState->pose_d, &(view->calib->intrinsics_d), renderState);
+		visualisationEngine->CreateExpectedDepths(trackingState->pose_d, &(view->calib->intrinsics_d), renderState); // what?? useless??
 
 		if (trackingState->requiresFullRendering)    //true
 		{

@@ -154,7 +154,7 @@ void ITMDepthTracker::TrackCamera(ITMTrackingState *trackingState, const ITMView
 	float nabla_good[6], nabla_new[6];
 	float step[6];
 
-	for (int levelId = viewHierarchy->noLevels - 1; levelId >= noICPLevel; levelId--)
+	for (int levelId = viewHierarchy->noLevels - 1; levelId >= noICPLevel; levelId--) //hierarchical ICP
 	{
 		this->SetEvaluationParams(levelId);
 		if (iterationType == TRACKER_ITERATION_NONE) continue;

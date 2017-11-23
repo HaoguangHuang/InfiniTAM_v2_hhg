@@ -337,7 +337,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::IntegrateInto
 
 	float *depth = view->depth->GetData(MEMORYDEVICE_CPU);
 	Vector4u *rgb = view->rgb->GetData(MEMORYDEVICE_CPU);
-	TVoxel *voxelArray = scene->localVBA.GetVoxelBlocks();
+	TVoxel *voxelArray = scene->localVBA.GetVoxelBlocks(); //return the data ptr to voxel of volume
 
 	const ITMPlainVoxelArray::IndexData *arrayInfo = scene->index.getIndexData();
 
@@ -348,7 +348,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::IntegrateInto
 	#pragma omp parallel for
 #endif
 	for (int locId = 0; locId < scene->index.getVolumeSize().x*scene->index.getVolumeSize().y*scene->index.getVolumeSize().z; ++locId)
-	{
+	{//locid:traverse the whole voxels in volume one by one
 		int z = locId / (scene->index.getVolumeSize().x*scene->index.getVolumeSize().y);
 		int tmp = locId - z * scene->index.getVolumeSize().x*scene->index.getVolumeSize().y;
 		int y = tmp / scene->index.getVolumeSize().x;
@@ -364,7 +364,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::IntegrateInto
 		pt_model.w = 1.0f;
 
 		ComputeUpdatedVoxelInfo<TVoxel::hasColorInformation,TVoxel>::compute(voxelArray[locId], pt_model, M_d, projParams_d, M_rgb, projParams_rgb, mu, maxW, 
-			depth, depthImgSize, rgb, rgbImgSize);
+			depth, depthImgSize, rgb, rgbImgSize); //tsdf fusion
 	}
 }
 

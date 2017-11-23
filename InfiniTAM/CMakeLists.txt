@@ -20,9 +20,9 @@ find_package(OpenGL REQUIRED)
 find_package(CUDA QUIET)
 CANONIFY_BOOL(CUDA_FOUND)
 ##################################
-message("this is CUDA_FOUND----------------" ${CUDA_FOUND})
+#message("this is CUDA_FOUND----------------" ${CUDA_FOUND})
 #set(CUDA_FOUND FALSE)
-message("this is CUDA_FOUND AFTER MODIFIED----------------" ${CUDA_FOUND})
+#message("this is CUDA_FOUND AFTER MODIFIED----------------" ${CUDA_FOUND})
 ##################################
 message(STATUS "CUDA found: " ${CUDA_FOUND})
 
@@ -85,7 +85,6 @@ IF(WITH_CUDA)
 ELSE()
   add_definitions(-DCOMPILE_WITHOUT_CUDA)
 ENDIF()
-
 #add by myself
 #include_directories(${CUDA_INCLUDE_DIRS})
 #add_definitions(-DCOMPILE_WITHOUT_CUDA)

@@ -85,8 +85,8 @@ void ITMVisualisationEngine_CPU<TVoxel, TIndex>::CreateExpectedDepths(const ITMP
 	for (int locId = 0; locId < imgSize.x*imgSize.y; ++locId) {
 		//TODO : this could be improved a bit...
 		Vector2f & pixel = minmaxData[locId];
-		pixel.x = 0.2f;
-		pixel.y = 3.0f;
+		pixel.x = 0.2f; // control the min value of frustum
+		pixel.y = 3.0f; // control the max value of frustum
 	}
 }
 
@@ -154,7 +154,7 @@ void ITMVisualisationEngine_CPU<TVoxel,ITMVoxelBlockHash>::CreateExpectedDepths(
 template<class TVoxel, class TIndex>
 static void GenericRaycast(const ITMScene<TVoxel,TIndex> *scene, const Vector2i& imgSize, const Matrix4f& invM, Vector4f projParams, const ITMRenderState *renderState)
 {
-	projParams.x = 1.0f / projParams.x;
+	projParams.x = 1.0f / projParams.x; // 1/cx
 	projParams.y = 1.0f / projParams.y;
 
 	const Vector2f *minmaximg = renderState->renderingRangeImage->GetData(MEMORYDEVICE_CPU);
@@ -167,14 +167,14 @@ static void GenericRaycast(const ITMScene<TVoxel,TIndex> *scene, const Vector2i&
 #ifdef WITH_OPENMP
 	#pragma omp parallel for
 #endif
-	for (int locId = 0; locId < imgSize.x*imgSize.y; ++locId)
+	for (int locId = 0; locId < imgSize.x*imgSize.y; ++locId)  //traverse pixel by pixel
 	{
 		int y = locId/imgSize.x;
 		int x = locId - y*imgSize.x;
-		int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x;
+		int locId2 = (int)floor((float)x / minmaximg_subsample) + (int)floor((float)y / minmaximg_subsample) * imgSize.x; // accelerate searching process of raycast
 
 		castRay<TVoxel, TIndex>(
-			pointsRay[locId],
+			pointsRay[locId], // this is output
 			x, y,
 			voxelData,
 			voxelIndex,
