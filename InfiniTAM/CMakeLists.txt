@@ -12,19 +12,20 @@ macro(CANONIFY_BOOL var)
 endmacro()
 
 
-
-
 find_package(GLUT REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(PCL REQUIRED)
 
 find_package(CUDA QUIET)
 CANONIFY_BOOL(CUDA_FOUND)
+CANONIFY_BOOL(PCL_FOUND)
 ##################################
 #message("this is CUDA_FOUND----------------" ${CUDA_FOUND})
 #set(CUDA_FOUND FALSE)
 #message("this is CUDA_FOUND AFTER MODIFIED----------------" ${CUDA_FOUND})
 ##################################
 message(STATUS "CUDA found: " ${CUDA_FOUND})
+message(STATUS "PCL found: " ${PCL_FOUND})
 
 #find_package(OpenNI QUIET)
 find_package(OpenNI QUIET)
@@ -52,6 +53,7 @@ message("this is WITH_CUDA---------" ${WITH_CUDA})
 
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/UseOpenMP.cmake)
 
+
 OPTION(WITH_REALSENSE "Build with Intel RealSense support?" ${REALSENSE_FOUND})
 OPTION(WITH_LIBROYALE "Build with LibRoyale support?" ${LibRoyale_FOUND})
 
@@ -74,6 +76,16 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libstdc++")
 ENDIF()
 
+#################################################
+include_directories("/usr/local/include/pcl-1.8")
+include_directories("/usr/include/eigen3")
+message("PCL_INCLUDE:" ${PCL_INCLUDE_DIRS})
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+#################################################
+
+
 add_subdirectory(ORUtils)
 add_subdirectory(ITMLib)
 add_subdirectory(Utils)
@@ -90,10 +102,13 @@ ENDIF()
 #add_definitions(-DCOMPILE_WITHOUT_CUDA)
 #######################################
 
+#set(PCL_LIB /usr/local/lib/libpcl_common.so /usr/local/lib/libpcl_io.so)
+
 add_executable(InfiniTAM_cli InfiniTAM_cli.cpp)
 target_link_libraries(InfiniTAM_cli Engine)
 target_link_libraries(InfiniTAM_cli Utils)
 add_executable(InfiniTAM InfiniTAM.cpp)
 target_link_libraries(InfiniTAM Engine)
+target_link_libraries(InfiniTAM ${PCL_LIBRARIES})
 target_link_libraries(InfiniTAM Utils)
 

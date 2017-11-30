@@ -358,6 +358,7 @@ void UIEngine::Initialise(int & argc, char** argv, ImageSourceEngine *imageSourc
 	int textHeight = 30; // Height of text area
 	//winSize.x = (int)(1.5f * (float)MAX(imageSource->getImageSize().x, imageSource->getDepthImageSize().x));
 	//winSize.y = MAX(imageSource->getRGBImageSize().y, imageSource->getDepthImageSize().y) + textHeight;
+	Vector2i a = imageSource->getDepthImageSize();
 	winSize.x = (int)(1.5f * (float)(imageSource->getDepthImageSize().x));
 	winSize.y = imageSource->getDepthImageSize().y + textHeight;
 	float h1 = textHeight / (float)winSize.y, h2 = (1.f + h1) / 2;
@@ -442,7 +443,10 @@ void UIEngine::GetScreenshot(ITMUChar4Image *dest) const
 void UIEngine::ProcessFrame()     //once press keyboard "n", it step into this function
 {
 	if (!imageSource->hasMoreImages()) return;
-	imageSource->getImages(inputRGBImage, inputRawDepthImage);
+	imageSource->getImages(inputRGBImage, inputRawDepthImage); //read rgb and depth frame by frame
+
+	// use var 'currentFrameNo' to get transformation.txt frame by frame
+
 
 	if (imuSource != NULL) {
 		if (!imuSource->hasMoreMeasurements()) return;

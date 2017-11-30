@@ -80,7 +80,7 @@ void ImageFileReader::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
 		bUsedCache = true;
 	}
 
-	if (!bUsedCache) {
+	if (!bUsedCache) { //jump out
 		char str[2048];
 
 		sprintf(str, rgbImageMask, currentFrameNo);
@@ -95,15 +95,19 @@ void ImageFileReader::getImages(ITMUChar4Image *rgb, ITMShortImage *rawDepth)
 
 Vector2i ImageFileReader::getDepthImageSize(void)
 {
-	loadIntoCache();
-	return cached_depth->noDims;
+//	loadIntoCache();
+//	return cached_depth->noDims;
+	int size[] = {640, 480};
+	return size;
 }
 
 Vector2i ImageFileReader::getRGBImageSize(void)
 {
-	loadIntoCache();
+//	loadIntoCache();
 	if (cached_rgb != NULL) return cached_rgb->noDims;
-	return cached_depth->noDims;
+//	return cached_depth->noDims;
+	int size[] = {640, 480};
+	return size;
 }
 
 CalibSource::CalibSource(const char *calibFilename, Vector2i setImageSize, float ratio)

@@ -3,7 +3,7 @@
 #include "ITMMainEngine.h"
 
 using namespace ITMLib::Engine;
-
+//imgSize_rgb:(640,480)
 ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
 {
 	// create all the things required for marching cubes and mesh extraction

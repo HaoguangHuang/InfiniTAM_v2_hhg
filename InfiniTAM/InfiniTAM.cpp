@@ -10,6 +10,12 @@
 #include "Engine/LibUVCEngine.h"
 #include "Engine/RealSenseEngine.h"
 #include "Engine/PicoFlexxEngine.h"
+#include "pcl-1.8/pcl/console/parse.h"
+#include "pcl-1.8/pcl/io/pcd_io.h"
+#include "pcl/point_types.h"
+#include "pcl/visualization/cloud_viewer.h"
+
+
 
 using namespace InfiniTAM::Engine;
 
@@ -24,7 +30,8 @@ static void CreateDefaultImageSource(ImageSourceEngine* & imageSource, IMUSource
 	const char *calibFile = arg1;
 	const char *filename1 = arg2;
 	const char *filename2 = arg3;
-	const char *filename_imu = arg4;
+//	const char *filename_imu = arg4;
+	const char *filename_imu = NULL;
 
 	printf("using calibration file: %s\n", calibFile);
 
@@ -111,6 +118,19 @@ try
 	const char *arg3 = NULL;
 	const char *arg4 = NULL;
 
+    std::string pc_file_str;
+    pcl::console::parse_argument(argc, argv, "-pcl_file", pc_file_str); ///home/hhg/Documents/myGithub2/tool/oni2picture_ed2/tankData/MATLAB/node_seg/output/pointcloud
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+	if(pcl::io::loadPCDFile<pcl::PointXYZ>(pc_file_str,*cloud) == -1){
+		PCL_ERROR("failed to load pcl file\n");
+		return -1;
+	}
+
+	/* visualize pointCloud */
+//	pcl::visualization::CloudViewer viewer("Cloud Viewer");
+//	viewer.showCloud(cloud);
+//	while(!viewer.wasStopped()){}
+
 	int arg = 1;
 	do {
 		if (argv[arg] != NULL) arg1 = argv[arg]; else break;
@@ -138,14 +158,17 @@ try
 	IMUSourceEngine *imuSource = NULL;
 
 	CreateDefaultImageSource(imageSource, imuSource, arg1, arg2, arg3, arg4);
-	if (imageSource==NULL)
-	{
-		std::cout << "failed to open any image stream" << std::endl;
-		return -1;
-	}
+
+//	if (imageSource==NULL)
+//	{
+//		std::cout << "failed to open any image stream" << std::endl;
+//		return -1;
+//	}
 
 	ITMLibSettings *internalSettings = new ITMLibSettings();
 	ITMMainEngine *mainEngine = new ITMMainEngine(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
+//	int rgb_size[2] = {640,480}; int depth_size[2] = {640,480};
+//    ITMMainEngine *mainEngine = new ITMMainEngine(internalSettings, &imageSource->calib, rgb_size, depth_size);
 
 	UIEngine::Instance()->Initialise(argc, argv, imageSource, imuSource, mainEngine, "./Files/Out", internalSettings->deviceType); //initialize windows
 	UIEngine::Instance()->Run();
