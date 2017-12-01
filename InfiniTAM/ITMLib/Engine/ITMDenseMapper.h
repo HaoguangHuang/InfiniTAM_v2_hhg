@@ -13,6 +13,9 @@
 #include "../Engine/ITMVisualisationEngine.h"
 #include "../Engine/ITMSwappingEngine.h"
 
+#include "pcl/io/pcd_io.h"
+#include "pcl/point_types.h"
+
 namespace ITMLib
 {
 	namespace Engine
@@ -31,6 +34,11 @@ namespace ITMLib
 
 			/// Process a single frame
 			void ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState, ITMScene<TVoxel,TIndex> *scene, ITMRenderState *renderState_live);
+
+			/// Process a warped pointcloud
+			void _warped_ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState, ITMScene<TVoxel,TIndex> *scene, ITMRenderState *renderState_live,
+                                      pcl::PointCloud<pcl::PointXYZ>::Ptr);
+
 
 			/// Update the visible list (this can be called to update the visible list when fusion is turned off)
 			void UpdateVisibleList(const ITMView *view, const ITMTrackingState *trackingState, ITMScene<TVoxel,TIndex> *scene, ITMRenderState *renderState);

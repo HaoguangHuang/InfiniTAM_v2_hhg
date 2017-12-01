@@ -17,6 +17,9 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 	this->scene = new ITMScene<ITMVoxel, ITMVoxelIndex>(&(settings->sceneParams), settings->useSwapping, 
 		settings->deviceType == ITMLibSettings::DEVICE_CUDA ? MEMORYDEVICE_CUDA : MEMORYDEVICE_CPU);
 
+    this->_warped_scene = new ITMScene<ITMVoxel, ITMVoxelIndex>(&(settings->sceneParams), false, MEMORYDEVICE_CPU);
+
+
 	meshingEngine = NULL;
 	switch (settings->deviceType)
 	{
@@ -54,6 +57,9 @@ ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib 
 
 	denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(settings);
 	denseMapper->ResetScene(scene);
+
+    _warped_denseMapper = new ITMDenseMapper<ITMVoxel, ITMVoxelIndex>(settings);
+    _warped_denseMapper->ResetScene(_warped_scene);
 
 	imuCalibrator = new ITMIMUCalibrator_iPad();
 	tracker = ITMTrackerFactory<ITMVoxel, ITMVoxelIndex>::Instance().Make(trackedImageSize, settings, lowLevelEngine, imuCalibrator, scene);
@@ -107,7 +113,7 @@ void ITMMainEngine::SaveSceneToMesh(const char *objFileName)
 	mesh->WriteSTL(objFileName);
 }
 
-void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
+void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, ITMIMUMeasurement *imuMeasurement)
 {
 	// prepare image and turn it into a depth image
 	if (imuMeasurement==NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter,settings->modelSensorNoise);
@@ -118,7 +124,12 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	// tracking
 	trackingController->Track(trackingState, view); //ICP,get transformation between current frame and fusioned model
 
-	// fusion
+
+    // build a new tsdf volume for the warped pointcloud
+    if (fusionActive) _warped_denseMapper->_warped_ProcessFrame(view, trackingState, _warped_scene, renderState_live, cloud);
+
+
+	// fusions
 	if (fusionActive) denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
 
 	// raycast to renderState_live for tracking and free visualisation

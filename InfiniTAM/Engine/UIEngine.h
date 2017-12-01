@@ -12,6 +12,9 @@
 
 #include <vector>
 
+#include "pcl/point_types.h"
+#include "pcl-1.8/pcl/io/pcd_io.h"
+
 namespace InfiniTAM
 {
 	namespace Engine
@@ -64,6 +67,9 @@ namespace InfiniTAM
 
 			int currentFrameNo; bool isRecording;
 		public:
+
+			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud; //pointcloud from last frame tsdf extraction
+
 			static UIEngine* Instance(void) {
 				if (instance == NULL) instance = new UIEngine();
 				return instance;
@@ -87,6 +93,10 @@ namespace InfiniTAM
 
 			void Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMMainEngine *mainEngine,
 				const char *outFolder, ITMLibSettings::DeviceType deviceType);
+
+			void Initialise(int & argc, char** argv, ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMMainEngine *mainEngine,
+							const char *outFolder, ITMLibSettings::DeviceType deviceType, pcl::PointCloud<pcl::PointXYZ>::Ptr cld);
+
 			void Shutdown();
 
 			void Run();

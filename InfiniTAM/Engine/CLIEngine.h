@@ -10,6 +10,10 @@
 #include "ImageSourceEngine.h"
 #include "IMUSourceEngine.h"
 
+
+#include "pcl/point_types.h"
+#include "pcl-1.8/pcl/io/pcd_io.h"
+
 namespace InfiniTAM
 {
 	namespace Engine
@@ -38,9 +42,15 @@ namespace InfiniTAM
 			}
 
 			float processedTime;
+			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;
+
 
 			void Initialise(ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMMainEngine *mainEngine,
-				ITMLibSettings::DeviceType deviceType);
+				ITMLibSettings::DeviceType deviceType, pcl::PointCloud<pcl::PointXYZ>::Ptr);
+
+            void Initialise(ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMMainEngine *mainEngine,
+                            ITMLibSettings::DeviceType deviceType);
+
 			void Shutdown();
 
 			void Run();

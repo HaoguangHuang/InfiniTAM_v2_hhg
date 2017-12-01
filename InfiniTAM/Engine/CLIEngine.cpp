@@ -10,7 +10,7 @@ using namespace InfiniTAM::Engine;
 CLIEngine* CLIEngine::instance;
 
 void CLIEngine::Initialise(ImageSourceEngine *imageSource, IMUSourceEngine *imuSource, ITMMainEngine *mainEngine,
-	ITMLibSettings::DeviceType deviceType)
+	ITMLibSettings::DeviceType deviceType, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
 {
 	this->imageSource = imageSource;
 	this->imuSource = imuSource;
@@ -51,8 +51,8 @@ bool CLIEngine::ProcessFrame()
 	sdkStartTimer(&timer_instant); sdkStartTimer(&timer_average);
 
 	//actual processing on the mailEngine
-	if (imuSource != NULL) mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, inputIMUMeasurement);
-	else mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage);
+	if (imuSource != NULL) mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, this->cloud, inputIMUMeasurement);
+	else mainEngine->ProcessFrame(inputRGBImage, inputRawDepthImage, this->cloud);
 
 #ifndef COMPILE_WITHOUT_CUDA
 	ITMSafeCall(cudaThreadSynchronize());

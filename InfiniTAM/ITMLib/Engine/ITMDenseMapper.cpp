@@ -64,6 +64,18 @@ void ITMDenseMapper<TVoxel,TIndex>::ProcessFrame(const ITMView *view, const ITMT
 	}
 }
 
+template <class TVoxel, class TIndex>
+void ITMDenseMapper<TVoxel, TIndex>::_warped_ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState,
+                                                          ITMScene<TVoxel, TIndex> *scene,
+                                                          ITMRenderState *renderState_live,
+                                                          pcl::PointCloud<pcl::PointXYZ>::Ptr) {
+    
+
+}
+
+
+
+
 template<class TVoxel, class TIndex>
 void ITMDenseMapper<TVoxel,TIndex>::UpdateVisibleList(const ITMView *view, const ITMTrackingState *trackingState, ITMScene<TVoxel,TIndex> *scene, ITMRenderState *renderState)
 {

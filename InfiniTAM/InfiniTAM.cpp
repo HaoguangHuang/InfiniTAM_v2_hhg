@@ -120,8 +120,8 @@ try
 
     std::string pc_file_str;
     pcl::console::parse_argument(argc, argv, "-pcl_file", pc_file_str); ///home/hhg/Documents/myGithub2/tool/oni2picture_ed2/tankData/MATLAB/node_seg/output/pointcloud
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-	if(pcl::io::loadPCDFile<pcl::PointXYZ>(pc_file_str,*cloud) == -1){
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cld (new pcl::PointCloud<pcl::PointXYZ>);
+	if(pcl::io::loadPCDFile<pcl::PointXYZ>(pc_file_str,*cld) == -1){
 		PCL_ERROR("failed to load pcl file\n");
 		return -1;
 	}
@@ -170,7 +170,7 @@ try
 //	int rgb_size[2] = {640,480}; int depth_size[2] = {640,480};
 //    ITMMainEngine *mainEngine = new ITMMainEngine(internalSettings, &imageSource->calib, rgb_size, depth_size);
 
-	UIEngine::Instance()->Initialise(argc, argv, imageSource, imuSource, mainEngine, "./Files/Out", internalSettings->deviceType); //initialize windows
+	UIEngine::Instance()->Initialise(argc, argv, imageSource, imuSource, mainEngine, "./Files/Out", internalSettings->deviceType, cld); //initialize windows
 	UIEngine::Instance()->Run();
 	UIEngine::Instance()->Shutdown();
 

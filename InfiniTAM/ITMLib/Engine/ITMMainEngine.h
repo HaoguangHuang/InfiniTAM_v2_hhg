@@ -4,6 +4,8 @@
 
 #include "../ITMLib.h"
 #include "../Utils/ITMLibSettings.h"
+#include "pcl/point_types.h"
+#include "pcl/io/pcd_io.h"
 
 /** \mainpage
     This is the API reference documentation for InfiniTAM. For a general
@@ -60,6 +62,8 @@ namespace ITMLib
 
 			ITMViewBuilder *viewBuilder;		
 			ITMDenseMapper<ITMVoxel,ITMVoxelIndex> *denseMapper;
+            ITMDenseMapper<ITMVoxel,ITMVoxelIndex> *_warped_denseMapper;
+
 			ITMTrackingController *trackingController;
 
 			ITMTracker *tracker;
@@ -69,6 +73,8 @@ namespace ITMLib
 			ITMTrackingState *trackingState;
 
 			ITMScene<ITMVoxel, ITMVoxelIndex> *scene;
+            ITMScene<ITMVoxel, ITMVoxelIndex> *_warped_scene;
+
 			ITMRenderState *renderState_live;
 			ITMRenderState *renderState_freeview;
 
@@ -94,7 +100,8 @@ namespace ITMLib
 			ITMScene<ITMVoxel, ITMVoxelIndex>* GetScene(void) { return scene; }
 
 			/// Process a frame with rgb and depth images and optionally a corresponding imu measurement
-			void ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement = NULL);
+			void ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, pcl::PointCloud<pcl::PointXYZ>::Ptr,
+			ITMIMUMeasurement *imuMeasurement = NULL);
 
 			// Gives access to the data structure used internally to store any created meshes
 			ITMMesh* GetMesh(void) { return mesh; }

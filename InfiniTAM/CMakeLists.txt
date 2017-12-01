@@ -104,9 +104,9 @@ ENDIF()
 
 #set(PCL_LIB /usr/local/lib/libpcl_common.so /usr/local/lib/libpcl_io.so)
 
-add_executable(InfiniTAM_cli InfiniTAM_cli.cpp)
-target_link_libraries(InfiniTAM_cli Engine)
-target_link_libraries(InfiniTAM_cli Utils)
+#add_executable(InfiniTAM_cli InfiniTAM_cli.cpp)
+#target_link_libraries(InfiniTAM_cli Engine)
+#target_link_libraries(InfiniTAM_cli Utils)
 add_executable(InfiniTAM InfiniTAM.cpp)
 target_link_libraries(InfiniTAM Engine)
 target_link_libraries(InfiniTAM ${PCL_LIBRARIES})

@@ -25,7 +25,7 @@ IF(DEFINED libuvc_INCLUDE_DIRS)
 ENDIF()
 
 IF(WITH_REALSENSE)
-  include_directories(${RealSense_INCLUDE_DIR})
+  include_directories(${RealSense_INCLUInfiniTAMDE_DIR})
   add_definitions(-DCOMPILE_WITH_RealSense)
   SET_PROPERTY(SOURCE RealSenseEngine.cpp PROPERTY COMPILE_FLAGS -std=c++11)
 ENDIF()
@@ -50,8 +50,8 @@ LibUVCEngine.cpp
 LibUVCEngine.h
 UIEngine.cpp
 UIEngine.h
-CLIEngine.cpp
-CLIEngine.h
+#CLIEngine.cpp
+#CLIEngine.h
 RealSenseEngine.cpp
 RealSenseEngine.h
 )
