@@ -31,6 +31,8 @@ _CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &
 	if (eta < -mu) return eta; // mu:truncated band
 
 	// compute updated SDF value and reliability
+	float test_0 = TVoxel::SDF_valueToFloat(0);
+	float test_1 = TVoxel::SDF_valueToFloat(16384);
 	oldF = TVoxel::SDF_valueToFloat(voxel.sdf); oldW = voxel.w_depth;
 
 	newF = MIN(1.0f, eta / mu); // closer is better

@@ -100,7 +100,7 @@ namespace ITMLib
 			ITMScene<ITMVoxel, ITMVoxelIndex>* GetScene(void) { return scene; }
 
 			/// Process a frame with rgb and depth images and optionally a corresponding imu measurement
-			void ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, pcl::PointCloud<pcl::PointXYZ>::Ptr,
+			void ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage,
 			ITMIMUMeasurement *imuMeasurement = NULL);
 
 			// Gives access to the data structure used internally to store any created meshes
@@ -129,8 +129,15 @@ namespace ITMLib
 			    Ommitting a separate image size for the depth images
 			    will assume same resolution as for the RGB images.
 			*/
-			ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1,-1));
+			ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, pcl::PointCloud<pcl::PointXYZ>::Ptr,
+                          Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1,-1));
 			~ITMMainEngine();
+
+
+            pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;
+
+
+
 		};
 	}
 }

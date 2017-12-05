@@ -4,6 +4,8 @@
 
 #include "../../ITMSceneReconstructionEngine.h"
 
+
+
 namespace ITMLib
 {
 	namespace Engine
@@ -43,6 +45,14 @@ namespace ITMLib
 
 			void IntegrateIntoScene(ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const ITMView *view, const ITMTrackingState *trackingState,
 				const ITMRenderState *renderState);
+
+			void _warped_IntegrateIntoScene(ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const ITMView *view, const ITMTrackingState *trackingState,
+									const ITMRenderState *renderState, pcl::PointCloud<pcl::PointXYZ>::Ptr warped_cloud,
+										   ITMScene<TVoxel, ITMPlainVoxelArray> *_warped_scene);
+
+			void build_volume_for_warped_pointcloud(pcl::PointCloud<pcl::PointXYZ>::Ptr warped_cloud,
+													ITMScene<TVoxel, ITMPlainVoxelArray> *_warped_scene,
+													float voxelSize);
 
 			ITMSceneReconstructionEngine_CPU(void);
 			~ITMSceneReconstructionEngine_CPU(void);

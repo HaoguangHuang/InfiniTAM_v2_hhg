@@ -3,8 +3,45 @@
 #include "ITMSceneReconstructionEngine_CPU.h"
 #include "../../DeviceAgnostic/ITMSceneReconstructionEngine.h"
 #include "../../../Objects/ITMRenderState_VH.h"
+#include "Eigen/Core"
+#include "pcl/common/impl/centroid.hpp"
+#include "pcl/visualization/cloud_viewer.h"
+
 
 using namespace ITMLib::Engine;
+
+template<class TVoxel>
+void ITMSceneReconstructionEngine_CPU
+		<TVoxel, ITMPlainVoxelArray>::build_volume_for_warped_pointcloud(pcl::PointCloud<pcl::PointXYZ>::Ptr warped_cloud,
+																		ITMScene<TVoxel, ITMPlainVoxelArray> *_warped_scene,
+																		float voxelSize){
+	//find center of warped_cloud
+	Eigen::Vector4f centriod;
+	pcl::compute3DCentroid(*warped_cloud, centriod);
+	pcl::PointCloud<pcl::PointXYZ>::Ptr locId_pc(new pcl::PointCloud<pcl::PointXYZ>);
+
+	//compute locId
+	for(int i = 0; i < warped_cloud->size(); i++){
+		Eigen::Vector3f warped_pt(warped_cloud->points[i].x, warped_cloud->points[i].y, warped_cloud->points[i].z);
+		Eigen::Vector3f centr(centriod[0], centriod[1], centriod[2]);
+		Eigen::Vector3f pts_centr_coo = warped_pt - centr; //transform warped_cloud into centroid_point_coordinate, where centroid is origin
+
+		pts_centr_coo = pts_centr_coo / 1000 / voxelSize;
+		Eigen::Vector3f offset(256,256,256);
+		Eigen::Vector3f res = pts_centr_coo + offset;
+
+		pcl::PointXYZ locId(int(res[0]+0.5), int(res[1]+0.5), int(res[2]+0.5));
+		locId_pc->push_back(locId);
+	}
+
+	//
+
+};
+
+
+
+
+
 
 template<class TVoxel>
 ITMSceneReconstructionEngine_CPU<TVoxel,ITMVoxelBlockHash>::ITMSceneReconstructionEngine_CPU(void) 
@@ -368,4 +405,72 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::IntegrateInto
 	}
 }
 
+
 template class ITMLib::Engine::ITMSceneReconstructionEngine_CPU<ITMVoxel, ITMVoxelIndex>;
+
+
+template<class TVoxel>
+void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::_warped_IntegrateIntoScene(ITMScene<TVoxel, ITMPlainVoxelArray> *scene, const ITMView *view,
+																					  const ITMTrackingState *trackingState, const ITMRenderState *renderState,
+																							  pcl::PointCloud<pcl::PointXYZ>::Ptr warped_cloud,
+																							  ITMScene<TVoxel, ITMPlainVoxelArray> *warped_scene)
+{
+	Vector2i rgbImgSize = view->rgb->noDims;
+	Vector2i depthImgSize = view->depth->noDims;
+	float voxelSize = scene->sceneParams->voxelSize;
+
+//	Matrix4f M_d, M_rgb;
+	Vector4f projParams_d, projParams_rgb;
+
+//	M_d = trackingState->pose_d->GetM();
+//	if (TVoxel::hasColorInformation) M_rgb = view->calib->trafo_rgb_to_depth.calib_inv * M_d;
+	Matrix4f M_d = Matrix4f(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
+	Matrix4f M_rgb = Matrix4f(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
+
+	projParams_d = view->calib->intrinsics_d.projectionParamsSimple.all;    //相机内参
+	projParams_rgb = view->calib->intrinsics_rgb.projectionParamsSimple.all;
+
+	float mu = scene->sceneParams->mu; int maxW = scene->sceneParams->maxW;
+
+	float *depth = view->depth->GetData(MEMORYDEVICE_CPU);
+	Vector4u *rgb = view->rgb->GetData(MEMORYDEVICE_CPU);
+
+	bool stopIntegratingAtMaxW = scene->sceneParams->stopIntegratingAtMaxW;
+	//bool approximateIntegration = !trackingState->requiresFullRendering;
+
+	/************build a volume for warped cloud. *************/
+	//new volume for warped cloud is stored in pointer *scene
+	ITMScene<TVoxel, ITMPlainVoxelArray> scene_backup(scene->sceneParams, scene->useSwapping, MEMORYDEVICE_CPU);
+
+	build_volume_for_warped_pointcloud(warped_cloud, warped_scene, voxelSize);
+
+
+	TVoxel *voxelArray = scene->localVBA.GetVoxelBlocks(); //return the data ptr to voxel of volume
+
+	const ITMPlainVoxelArray::IndexData *arrayInfo = scene->index.getIndexData();
+
+
+#ifdef WITH_OPENMP
+#pragma omp parallel for
+#endif
+	for (int locId = 0; locId < scene->index.getVolumeSize().x*scene->index.getVolumeSize().y*scene->index.getVolumeSize().z; ++locId)
+	{//locid:traverse the whole voxels in volume one by one
+		int z = locId / (scene->index.getVolumeSize().x*scene->index.getVolumeSize().y);
+		int tmp = locId - z * scene->index.getVolumeSize().x*scene->index.getVolumeSize().y;
+		int y = tmp / scene->index.getVolumeSize().x;
+		int x = tmp - y * scene->index.getVolumeSize().x;
+		Vector4f pt_model;
+
+		if (stopIntegratingAtMaxW) if (voxelArray[locId].w_depth == maxW) continue;
+		//if (approximateIntegration) if (voxelArray[locId].w_depth != 0) continue;
+
+		pt_model.x = (float)(x + arrayInfo->offset.x) * voxelSize;
+		pt_model.y = (float)(y + arrayInfo->offset.y) * voxelSize;
+		pt_model.z = (float)(z + arrayInfo->offset.z) * voxelSize;
+		pt_model.w = 1.0f;
+		//per voxel
+		ComputeUpdatedVoxelInfo<TVoxel::hasColorInformation,TVoxel>::compute(voxelArray[locId], pt_model, M_d, projParams_d, M_rgb, projParams_rgb, mu, maxW,
+																			 depth, depthImgSize, rgb, rgbImgSize); //tsdf fusion
+	}
+}
+

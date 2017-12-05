@@ -37,7 +37,7 @@ namespace ITMLib
 
 			/// Process a warped pointcloud
 			void _warped_ProcessFrame(const ITMView *view, const ITMTrackingState *trackingState, ITMScene<TVoxel,TIndex> *scene, ITMRenderState *renderState_live,
-                                      pcl::PointCloud<pcl::PointXYZ>::Ptr);
+                                      pcl::PointCloud<pcl::PointXYZ>::Ptr cld, ITMScene<TVoxel,TIndex> *_warped_scene);
 
 
 			/// Update the visible list (this can be called to update the visible list when fusion is turned off)

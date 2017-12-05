@@ -4,8 +4,11 @@
 
 using namespace ITMLib::Engine;
 //imgSize_rgb:(640,480)
-ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, Vector2i imgSize_rgb, Vector2i imgSize_d)
+ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
+							 Vector2i imgSize_rgb, Vector2i imgSize_d
+)
 {
+	this->cloud = cloud;
 	// create all the things required for marching cubes and mesh extraction
 	// - uses additional memory (lots!)
 	static const bool createMeshingEngine = true;
@@ -113,7 +116,7 @@ void ITMMainEngine::SaveSceneToMesh(const char *objFileName)
 	mesh->WriteSTL(objFileName);
 }
 
-void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, ITMIMUMeasurement *imuMeasurement)
+void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDepthImage, ITMIMUMeasurement *imuMeasurement)
 {
 	// prepare image and turn it into a depth image
 	if (imuMeasurement==NULL) viewBuilder->UpdateView(&view, rgbImage, rawDepthImage, settings->useBilateralFilter,settings->modelSensorNoise);
@@ -126,7 +129,7 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 
 
     // build a new tsdf volume for the warped pointcloud
-    if (fusionActive) _warped_denseMapper->_warped_ProcessFrame(view, trackingState, _warped_scene, renderState_live, cloud);
+    if (fusionActive) _warped_denseMapper->_warped_ProcessFrame(view, trackingState, scene, renderState_live, cloud, _warped_scene);
 
 
 	// fusions

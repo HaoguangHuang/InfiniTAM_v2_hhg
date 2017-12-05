@@ -29,7 +29,7 @@ namespace ITMLib
 			TIndex index;
 
 			/** Current local content of the 8x8x8 voxel blocks -- stored host or device */
-			ITMLocalVBA<TVoxel> localVBA;
+			ITMLocalVBA<TVoxel> localVBA; //store volume data
 
 			/** Global content of the 8x8x8 voxel blocks -- stored on host only */
 			ITMGlobalCache<TVoxel> *globalCache;

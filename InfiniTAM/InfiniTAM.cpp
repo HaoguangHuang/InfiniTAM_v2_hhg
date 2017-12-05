@@ -128,7 +128,7 @@ try
 
 	/* visualize pointCloud */
 //	pcl::visualization::CloudViewer viewer("Cloud Viewer");
-//	viewer.showCloud(cloud);
+//	viewer.showCloud(cld);
 //	while(!viewer.wasStopped()){}
 
 	int arg = 1;
@@ -166,7 +166,7 @@ try
 //	}
 
 	ITMLibSettings *internalSettings = new ITMLibSettings();
-	ITMMainEngine *mainEngine = new ITMMainEngine(internalSettings, &imageSource->calib, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
+	ITMMainEngine *mainEngine = new ITMMainEngine(internalSettings, &imageSource->calib, cld, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 //	int rgb_size[2] = {640,480}; int depth_size[2] = {640,480};
 //    ITMMainEngine *mainEngine = new ITMMainEngine(internalSettings, &imageSource->calib, rgb_size, depth_size);
 
