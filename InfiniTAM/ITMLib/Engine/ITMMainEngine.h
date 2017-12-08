@@ -73,7 +73,7 @@ namespace ITMLib
 			ITMTrackingState *trackingState;
 
 			ITMScene<ITMVoxel, ITMVoxelIndex> *scene;
-            ITMScene<ITMVoxel, ITMVoxelIndex> *_warped_scene;
+
 
 			ITMRenderState *renderState_live;
 			ITMRenderState *renderState_freeview;
@@ -134,10 +134,11 @@ namespace ITMLib
 			~ITMMainEngine();
 
 
+            ITMScene<ITMVoxel, ITMVoxelIndex> *_warped_scene;
             pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;
-
-
-
+            pcl::PointCloud<pcl::PointXYZ>::Ptr extracted_cloud;
+            void fetchCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr extracted_cloud, ITMScene<ITMVoxel, ITMVoxelIndex> *_warped_scene);
+            void fetchCloud_test(pcl::PointCloud<pcl::PointXYZ>::Ptr extracted_cloud, ITMScene<ITMVoxel, ITMVoxelIndex> *_warped_scene);
 		};
 	}
 }

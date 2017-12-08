@@ -28,20 +28,18 @@ _CPU_AND_GPU_CODE_ inline float computeUpdatedVoxelDepthInfo(DEVICEPTR(TVoxel) &
 
 	// check whether voxel needs updating
 	eta = depth_measure - pt_camera.z;
-	if (eta < -mu) return eta; // mu:truncated band
+	if (eta < -mu) return eta; // mu:truncated band,20mm.     Here representing that the sdf value of voxels behind visible surface will not be changed
 
 	// compute updated SDF value and reliability
-	float test_0 = TVoxel::SDF_valueToFloat(0);
-	float test_1 = TVoxel::SDF_valueToFloat(16384);
 	oldF = TVoxel::SDF_valueToFloat(voxel.sdf); oldW = voxel.w_depth;
 
-	newF = MIN(1.0f, eta / mu); // closer is better
+	newF = MIN(1.0f, eta / mu); // closer is better      It can be minus     mu=0.02
 	newW = 1;
 
 	newF = oldW * oldF + newW * newF;
 	newW = oldW + newW;
 	newF /= newW;
-	newW = MIN(newW, maxW);
+	newW = MIN(newW, maxW); //maxW = 100
 
 	// write back
 	voxel.sdf = TVoxel::SDF_floatToValue(newF);

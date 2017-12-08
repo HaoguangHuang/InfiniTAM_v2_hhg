@@ -1,13 +1,168 @@
 // Copyright 2014-2015 Isis Innovation Limited and the authors of InfiniTAM
 
 #include "ITMMainEngine.h"
+#include "pcl/visualization/cloud_viewer.h"
 
 using namespace ITMLib::Engine;
+
+//[fx, fy, cx, cy]
+void forward_project(float* D, pcl::PointCloud<pcl::PointXYZ>::Ptr pc2, Vector4f camera_para){
+	for(int r = 0; r < 480; r++){
+		for(int c = 0; c > 640; c++){
+			//depth[(int)(pt_image.x + 0.5f) + (int)(pt_image.y + 0.5f) * imgSize.x]
+			float d = D[c + r * 480];
+			if(d > 0){
+				int z = d * 1000;
+//				int x = (c - )
+			}
+		}
+	}
+}
+
+
+
+void ITMMainEngine::fetchCloud_test(pcl::PointCloud<pcl::PointXYZ>::Ptr extracted_cloud,
+							   ITMScene<ITMVoxel, ITMVoxelIndex> *_warped_scene) {
+
+	int volume_x = _warped_scene->index.getVolumeSize().x;
+	int volume_y = _warped_scene->index.getVolumeSize().y;
+	int volume_z = _warped_scene->index.getVolumeSize().z;
+
+//	const int DIVISOR = 32767;
+
+#define FETCH(x, y, z) (_warped_scene->localVBA.GetVoxelBlocks()[(x) + (y) *volume_x + (z) * volume_x * volume_y])
+
+	Eigen::Array3f cell_size(_warped_scene->sceneParams->voxelSize);
+
+	Eigen::Vector3f translation_volumeCoo_to_liveFrameCoo(-volume_x*cell_size[0]/2, -volume_y*cell_size[1]/2, 0);
+
+
+/*openMP shoule be opened*/
+#ifdef WITH_OPENMP
+#pragma omp parallel for
+#endif
+	for (int x = 1; x < volume_x-1; x++){
+		for (int y = 1; y < volume_y-1; y++){
+			for (int z = 0; z < volume_z-1; z++){
+				ITMVoxel voxel_tmp = FETCH(x, y, z);
+				float F = ITMVoxel::SDF_valueToFloat(voxel_tmp.sdf); //[0,32767]
+				int W = voxel_tmp.w_depth;//{0,1}  after integraing the live frame, W of allocated voxels should not be zero anymore
+
+				if (W == 0 || F == 1) continue;
+
+				Eigen::Vector3f V = ((Eigen::Array3i(x,y,z).cast<float>() + Eigen::Array3f(0.5f))*cell_size).matrix();
+
+				int dz = 1;
+				for (int dy = -1; dy < 2; dy++){
+					for (int dx = -1; dx < 2; dx++){
+						ITMVoxel voxel = FETCH(x+dx, y+dy, z+dz);
+						float Fn = ITMVoxel::SDF_valueToFloat(voxel.sdf); //[0,32767]
+						int Wn = voxel.w_depth;
+
+						//if (Wn == 0 || Fn == 1) continue;
+
+						if (F * Fn <= 0){
+							Eigen::Vector3f Vn = ((Eigen::Array3i (x+dx, y+dy, z+dz).cast<float>() + Eigen::Array3f(0.5f)) * cell_size).matrix();
+							Eigen::Vector3f point;
+							if (F == 0 && Fn ==0){//in volume coo
+								point = (V + Vn) / 2;
+							}
+							else{
+								point = (V * (float)abs (Fn) + Vn * (float)abs (F)) / (float)(abs (F) + abs (Fn));
+							}
+
+
+							point = (point + translation_volumeCoo_to_liveFrameCoo) * 1000; //mm
+
+							pcl::PointXYZ xyz(point[0],point[1],point[2]);
+
+							extracted_cloud->push_back(xyz);
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+}
+
+
+
+
+void ITMMainEngine::fetchCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr extracted_cloud,
+							   ITMScene<ITMVoxel, ITMVoxelIndex> *_warped_scene) {
+
+    int volume_x = _warped_scene->index.getVolumeSize().x;
+	int volume_y = _warped_scene->index.getVolumeSize().y;
+	int volume_z = _warped_scene->index.getVolumeSize().z;
+
+//	const int DIVISOR = 32767;
+
+#define FETCH(x, y, z) (_warped_scene->localVBA.GetVoxelBlocks()[(x) + (y) *volume_x + (z) * volume_x * volume_y])
+
+	Eigen::Array3f cell_size(_warped_scene->sceneParams->voxelSize);
+
+    Eigen::Vector3f translation_volumeCoo_to_liveFrameCoo(-volume_x*cell_size[0]/2, -volume_y*cell_size[1]/2, 0);
+
+
+/*openMP shoule be opened*/
+#ifdef WITH_OPENMP
+#pragma omp parallel for
+#endif
+	for (int x = 1; x < volume_x-1; x++){
+		for (int y = 1; y < volume_y-1; y++){
+			for (int z = 0; z < volume_z-1; z++){
+				ITMVoxel voxel_tmp = FETCH(x, y, z);
+                float F = ITMVoxel::SDF_valueToFloat(voxel_tmp.sdf); //[0,32767]
+				int W = voxel_tmp.w_depth;//{0,1}  after integraing the live frame, W of allocated voxels should not be zero anymore
+
+				if (W == 0 || F == 1) continue;
+
+				Eigen::Vector3f V = ((Eigen::Array3i(x,y,z).cast<float>() + Eigen::Array3f(0.5f))*cell_size).matrix();
+
+				int dz = 1;
+				for (int dy = -1; dy < 2; dy++){
+					for (int dx = -1; dx < 2; dx++){
+						ITMVoxel voxel = FETCH(x+dx, y+dy, z+dz);
+                        float Fn = ITMVoxel::SDF_valueToFloat(voxel.sdf); //[0,32767]
+						int Wn = voxel.w_depth;
+
+                        if (Wn == 0 || Fn == 1) continue;
+
+                        if (F * Fn <= 0){
+                            Eigen::Vector3f Vn = ((Eigen::Array3i (x+dx, y+dy, z+dz).cast<float>() + Eigen::Array3f(0.5f)) * cell_size).matrix();
+                            Eigen::Vector3f point;
+                            if (F == 0 && Fn ==0){//in volume coo
+                                point = (V + Vn) / 2;
+                            }
+                            else{
+                                point = (V * (float)abs (Fn) + Vn * (float)abs (F)) / (float)(abs (F) + abs (Fn));
+                            }
+
+
+                            point = (point + translation_volumeCoo_to_liveFrameCoo) * 1000; //mm
+
+                            pcl::PointXYZ xyz(point[0],point[1],point[2]);
+
+                            extracted_cloud->push_back(xyz);
+                        }
+					}
+				}
+			}
+		}
+	}
+
+
+}
+
+
+
 //imgSize_rgb:(640,480)
 ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
-							 Vector2i imgSize_rgb, Vector2i imgSize_d
-)
-{
+							 Vector2i imgSize_rgb, Vector2i imgSize_d):extracted_cloud(new pcl::PointCloud<pcl::PointXYZ>){
+//	pcl::PointCloud<pcl::PointXYZ>::Ptr initial_pc(new pcl::PointCloud<pcl::PointXYZ>::Ptr);
+	this->extracted_cloud->points.reserve(100000);
 	this->cloud = cloud;
 	// create all the things required for marching cubes and mesh extraction
 	// - uses additional memory (lots!)
@@ -128,16 +283,31 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	trackingController->Track(trackingState, view); //ICP,get transformation between current frame and fusioned model
 
 
-    // build a new tsdf volume for the warped pointcloud
+    // build a new tsdf volume for the warped pointcloud, and fusion the live frame into _warped_scene
     if (fusionActive) _warped_denseMapper->_warped_ProcessFrame(view, trackingState, scene, renderState_live, cloud, _warped_scene);
 
+    //using fetchCloud algorithm to extract pointcloud from _warped_scene
+	fetchCloud_test(this->extracted_cloud, _warped_scene);
+
+    /* visualize pointCloud */
+	pcl::visualization::CloudViewer viewer("Cloud Viewer");
+	viewer.showCloud(extracted_cloud);
+	while(!viewer.wasStopped()){}
+
+    /*output extracted_cloud*/
+	std::string output_file = "/home/hhg/Documents/myGithub2/InfiniTAM_v2_hhg/InfiniTAM/Files/wajueji/output/hhg.pcd";
+	pcl::io::savePCDFileBinary(output_file, *extracted_cloud);
 
 	// fusions
 	if (fusionActive) denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
 
 	// raycast to renderState_live for tracking and free visualisation
 	trackingController->Prepare(trackingState, view, renderState_live);
+
+
 }
+
+
 
 Vector2i ITMMainEngine::GetImageSize(void) const
 {

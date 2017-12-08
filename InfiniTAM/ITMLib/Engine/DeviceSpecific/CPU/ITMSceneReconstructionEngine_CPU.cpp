@@ -16,25 +16,68 @@ void ITMSceneReconstructionEngine_CPU
 																		ITMScene<TVoxel, ITMPlainVoxelArray> *_warped_scene,
 																		float voxelSize){
 	//find center of warped_cloud
-	Eigen::Vector4f centriod;
-	pcl::compute3DCentroid(*warped_cloud, centriod);
 	pcl::PointCloud<pcl::PointXYZ>::Ptr locId_pc(new pcl::PointCloud<pcl::PointXYZ>);
 
 	//compute locId
 	for(int i = 0; i < warped_cloud->size(); i++){
 		Eigen::Vector3f warped_pt(warped_cloud->points[i].x, warped_cloud->points[i].y, warped_cloud->points[i].z);
-		Eigen::Vector3f centr(centriod[0], centriod[1], centriod[2]);
-		Eigen::Vector3f pts_centr_coo = warped_pt - centr; //transform warped_cloud into centroid_point_coordinate, where centroid is origin
-
-		pts_centr_coo = pts_centr_coo / 1000 / voxelSize;
-		Eigen::Vector3f offset(256,256,256);
-		Eigen::Vector3f res = pts_centr_coo + offset;
-
+		Eigen::Vector3f id1(warped_pt[0]/voxelSize/1000, warped_pt[1]/voxelSize/1000, warped_pt[2]/voxelSize/1000);
+		Eigen::Vector3f offset(256,256,0);
+		Eigen::Vector3f res = id1 + offset;
 		pcl::PointXYZ locId(int(res[0]+0.5), int(res[1]+0.5), int(res[2]+0.5));
 		locId_pc->push_back(locId);
 	}
 
-	//
+	//build volume from locId_pc
+	for(int i = 0; i < locId_pc->size(); i++){
+		unsigned short x = locId_pc->points[i].x;
+		unsigned short y = locId_pc->points[i].y;
+		unsigned short z = locId_pc->points[i].z;
+
+		if (x < 0 || x > 511 || y < 0 || y > 511 || z < 0 || z > 511) continue;
+
+		//if corresponding voxel is not empty
+		int locId = _warped_scene->index.getVolumeSize().x * _warped_scene->index.getVolumeSize().y * z +
+				_warped_scene->index.getVolumeSize().x * y + x;
+		if(locId < 0) continue;
+		TVoxel *voxelArray = _warped_scene->localVBA.GetVoxelBlocks();
+//		TVoxel voxel = voxelArray[locId];
+//		int a = TVoxel::SDF_valueToFloat(voxel.sdf);
+		if(voxelArray[locId].sdf == 32767){  //this voxel is empty
+            voxelArray[locId].sdf = 0; voxelArray[locId].w_depth = 1;
+		}
+	}
+
+    //check how many voxels has zero-value sdf
+//    int cnt = 0;
+//    for (int i = 0; i < 512*512*512;i++){
+//        TVoxel voxel = _warped_scene->localVBA.GetVoxelBlocks()[i];
+//        if (voxel.sdf == 0) cnt++;
+//    }
+//
+//	pcl::PointCloud<pcl::PointXYZ>::Ptr tmp_pc(new pcl::PointCloud<pcl::PointXYZ>);
+//	//check effect of volume-building
+//	for (int locId = 0; locId < 512*512*512; locId++){
+//		TVoxel voxel = _warped_scene->localVBA.GetVoxelBlocks()[locId];
+//		if (voxel.sdf != 0) continue;
+//		int z = locId / (_warped_scene->index.getVolumeSize().x*_warped_scene->index.getVolumeSize().y);
+//		int tmp = locId - z * _warped_scene->index.getVolumeSize().x*_warped_scene->index.getVolumeSize().y;
+//		int y = tmp / _warped_scene->index.getVolumeSize().x;
+//		int x = tmp - y * _warped_scene->index.getVolumeSize().x;
+//		Vector3f pt_model;
+//
+//		pt_model.x = float(x) * voxelSize;
+//		pt_model.y = float(y) * voxelSize;
+//		pt_model.z = float(z) * voxelSize;
+//
+//		pcl::PointXYZ p(pt_model[0],pt_model[1],pt_model[2]);
+//
+//		tmp_pc->push_back(p);
+//	}
+
+//	pcl::visualization::CloudViewer viewer("Cloud Viewer");
+//	viewer.showCloud(tmp_pc);
+//	while(!viewer.wasStopped()){}
 
 };
 
@@ -443,7 +486,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::_warped_Integ
 	ITMScene<TVoxel, ITMPlainVoxelArray> scene_backup(scene->sceneParams, scene->useSwapping, MEMORYDEVICE_CPU);
 
 	build_volume_for_warped_pointcloud(warped_cloud, warped_scene, voxelSize);
-
+	scene = warped_scene;
 
 	TVoxel *voxelArray = scene->localVBA.GetVoxelBlocks(); //return the data ptr to voxel of volume
 
