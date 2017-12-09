@@ -5,6 +5,11 @@
 
 using namespace ITMLib::Engine;
 
+template<typename T>
+T inline get_abs(T x){ return x < 0? -x:x; }
+
+
+
 //[fx, fy, cx, cy]
 void forward_project(float* D, pcl::PointCloud<pcl::PointXYZ>::Ptr pc2, Vector4f camera_para){
 	for(int r = 0; r < 480; r++){
@@ -60,15 +65,15 @@ void ITMMainEngine::fetchCloud_test(pcl::PointCloud<pcl::PointXYZ>::Ptr extracte
 						int Wn = voxel.w_depth;
 
 						//if (Wn == 0 || Fn == 1) continue;
-
-						if (F * Fn <= 0){
+//                        F * Fn == 0 || (F > 0 && Fn < 0)
+						if (F * Fn == 0 || (F > 0 && Fn < 0)){
 							Eigen::Vector3f Vn = ((Eigen::Array3i (x+dx, y+dy, z+dz).cast<float>() + Eigen::Array3f(0.5f)) * cell_size).matrix();
 							Eigen::Vector3f point;
 							if (F == 0 && Fn ==0){//in volume coo
 								point = (V + Vn) / 2;
 							}
 							else{
-								point = (V * (float)abs (Fn) + Vn * (float)abs (F)) / (float)(abs (F) + abs (Fn));
+                                point = (V * float(get_abs(Fn)) + Vn * float(get_abs(F))) / float(get_abs(F) + get_abs(Fn));
 							}
 
 
