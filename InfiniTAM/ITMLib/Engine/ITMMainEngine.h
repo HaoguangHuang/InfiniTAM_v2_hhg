@@ -129,7 +129,7 @@ namespace ITMLib
 			    Ommitting a separate image size for the depth images
 			    will assume same resolution as for the RGB images.
 			*/
-			ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, pcl::PointCloud<pcl::PointXYZ>::Ptr,
+			ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, pcl::PointCloud<pcl::PointXYZ>::Ptr, std::string output_fname,
                           Vector2i imgSize_rgb, Vector2i imgSize_d = Vector2i(-1,-1));
 			~ITMMainEngine();
 
@@ -139,6 +139,11 @@ namespace ITMLib
             pcl::PointCloud<pcl::PointXYZ>::Ptr extracted_cloud;
             void fetchCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr extracted_cloud, ITMScene<ITMVoxel, ITMVoxelIndex> *_warped_scene);
             void fetchCloud_test(pcl::PointCloud<pcl::PointXYZ>::Ptr extracted_cloud, ITMScene<ITMVoxel, ITMVoxelIndex> *_warped_scene);
+
+
+			std::string output_file_name;
+
+
 		};
 	}
 }

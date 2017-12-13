@@ -43,6 +43,7 @@ void ImageFileReader::loadIntoCache(void)
 
 	char str[2048];
 
+
 	sprintf(str, rgbImageMask, currentFrameNo);
 	if (!ReadImageFromFile(cached_rgb, str)) 
 	{

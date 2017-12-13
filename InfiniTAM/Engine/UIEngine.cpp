@@ -143,6 +143,16 @@ void UIEngine::glutIdleFunction()
 	if (uiEngine->needsRefresh) {
 		glutPostRedisplay();
 	}
+
+	if(uiEngine->processedFrameNo == 0){
+		printf("processing one frame ...\n");
+		uiEngine->mainLoopAction = UIEngine::PROCESS_FRAME;
+	}
+
+	if(uiEngine->processedFrameNo == 1){
+		printf("exiting ...\n");
+		uiEngine->mainLoopAction = UIEngine::EXIT;
+	}
 }
 
 void UIEngine::glutKeyUpFunction(unsigned char key, int x, int y)
@@ -482,6 +492,8 @@ void UIEngine::ProcessFrame()     //once press keyboard "n", it step into this f
 	processedTime = sdkGetAverageTimerValue(&timer_average);
 
 	currentFrameNo++;
+
+
 }
 
 void UIEngine::Run() { glutMainLoop(); }

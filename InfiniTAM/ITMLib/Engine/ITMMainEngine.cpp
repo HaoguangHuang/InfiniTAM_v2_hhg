@@ -164,11 +164,12 @@ void ITMMainEngine::fetchCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr extracted_clo
 
 
 //imgSize_rgb:(640,480)
-ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
+ITMMainEngine::ITMMainEngine(const ITMLibSettings *settings, const ITMRGBDCalib *calib, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, std::string output_fname,
 							 Vector2i imgSize_rgb, Vector2i imgSize_d):extracted_cloud(new pcl::PointCloud<pcl::PointXYZ>){
 //	pcl::PointCloud<pcl::PointXYZ>::Ptr initial_pc(new pcl::PointCloud<pcl::PointXYZ>::Ptr);
 	this->extracted_cloud->points.reserve(100000);
 	this->cloud = cloud;
+	this->output_file_name = output_fname;
 	// create all the things required for marching cubes and mesh extraction
 	// - uses additional memory (lots!)
 	static const bool createMeshingEngine = true;
@@ -300,8 +301,7 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	while(!viewer.wasStopped()){}
 
     /*output extracted_cloud*/
-	std::string output_file = "/home/hhg/Documents/myGithub2/InfiniTAM_v2_hhg/InfiniTAM/Files/wajueji/output/hhg.pcd";
-	pcl::io::savePCDFileBinary(output_file, *extracted_cloud);
+	pcl::io::savePCDFileBinary(this->output_file_name, *extracted_cloud);
 
 	// fusions
 	if (fusionActive) denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
