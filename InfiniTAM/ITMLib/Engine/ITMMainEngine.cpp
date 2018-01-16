@@ -43,9 +43,9 @@ void ITMMainEngine::fetchCloud_test(pcl::PointCloud<pcl::PointXYZ>::Ptr extracte
 
 
 /*openMP shoule be opened*/
-#ifdef WITH_OPENMP
-#pragma omp parallel for
-#endif
+//#ifdef WITH_OPENMP
+//#pragma omp parallel for
+//#endif
 	for (int x = 1; x < volume_x-1; x++){
 		for (int y = 1; y < volume_y-1; y++){
 			for (int z = 0; z < volume_z-1; z++){
@@ -288,6 +288,10 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	// tracking
 	trackingController->Track(trackingState, view); //ICP,get transformation between current frame and fusioned model
 
+    /* visualize pointCloud */
+//	pcl::visualization::CloudViewer viewer("Cloud Viewer");
+//	viewer.showCloud(cloud);
+//	while(!viewer.wasStopped()){}
 
     // build a new tsdf volume for the warped pointcloud, and fusion the live frame into _warped_scene
     if (fusionActive) _warped_denseMapper->_warped_ProcessFrame(view, trackingState, scene, renderState_live, cloud, _warped_scene);
@@ -296,9 +300,9 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 	fetchCloud_test(this->extracted_cloud, _warped_scene);
 
     /* visualize pointCloud */
-	pcl::visualization::CloudViewer viewer("Cloud Viewer");
-	viewer.showCloud(extracted_cloud);
-	while(!viewer.wasStopped()){}
+//	pcl::visualization::CloudViewer viewer("Cloud Viewer");
+//	viewer.showCloud(extracted_cloud);
+//	while(!viewer.wasStopped()){}
 
     /*output extracted_cloud*/
 	pcl::io::savePCDFileBinary(this->output_file_name, *extracted_cloud);

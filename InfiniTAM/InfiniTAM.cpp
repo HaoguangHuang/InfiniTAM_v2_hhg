@@ -120,19 +120,15 @@ try
 
     std::string pc_file_str;
     std::string output_file_name;
-    pcl::console::parse_argument(argc, argv, "-pcd_file", pc_file_str); ///home/hhg/Documents/myGithub2/tool/oni2picture_ed2/tankData/MATLAB/node_seg/output/pointcloud
+    pcl::console::parse_argument(argc, argv, "-pcd_file", pc_file_str);
     pcl::console::parse_argument(argc, argv, "-output_file_name", output_file_name);
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cld (new pcl::PointCloud<pcl::PointXYZ>);
-//	if(pcl::io::loadPCDFile<pcl::PointXYZ>(pc_file_str,*cld) == -1){
-//		PCL_ERROR("failed to load pcl file\n");
-//		return -1;
-//	}
+	if(pcl::io::loadPCDFile<pcl::PointXYZ>(pc_file_str,*cld) == -1){
+		PCL_ERROR("failed to load pcl file\n");
+		return -1;
+	}
 
-	/* visualize pointCloud */
-//	pcl::visualization::CloudViewer viewer("Cloud Viewer");
-//	viewer.showCloud(cld);
-//	while(!viewer.wasStopped()){}
 
 	int arg = 1;
 	do {
