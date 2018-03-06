@@ -34,6 +34,14 @@ namespace ITMLib
 					offset.y = -256;
 					offset.z = 0;
 				}
+
+				ITMVoxelArrayInfo(int vol_resolution){
+					size.x = size.y = size.z = vol_resolution;
+					offset.x = -vol_resolution/2;
+					offset.y = -vol_resolution/2;
+					offset.z = 0;
+				}
+
 			};
 
 			typedef ITMVoxelArrayInfo IndexData;
@@ -55,6 +63,21 @@ namespace ITMLib
 
 				indexData->GetData(MEMORYDEVICE_CPU)[0] = IndexData();
 				indexData->UpdateDeviceFromHost();
+
+			}
+
+
+			ITMPlainVoxelArray(MemoryDeviceType memoryType, int vol_resolution)
+			{
+				this->memoryType = memoryType;
+
+				if (memoryType == MEMORYDEVICE_CUDA) indexData = new ORUtils::MemoryBlock<IndexData>(1, true, true);
+				else indexData = new ORUtils::MemoryBlock<IndexData>(1, true, false);
+
+//				indexData->GetData(MEMORYDEVICE_CPU)[0] = IndexData();
+				indexData->GetData(MEMORYDEVICE_CPU)[0] = IndexData(vol_resolution);
+				indexData->UpdateDeviceFromHost();
+
 			}
 
 			~ITMPlainVoxelArray(void)

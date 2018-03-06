@@ -120,8 +120,12 @@ try
 
     std::string pc_file_str;
     std::string output_file_name;
+    float volume_size;
+	unsigned int volume_resolution;
     pcl::console::parse_argument(argc, argv, "-pcd_file", pc_file_str);
     pcl::console::parse_argument(argc, argv, "-output_file_name", output_file_name);
+    pcl::console::parse_argument(argc, argv, "-volume_size",volume_size);
+	pcl::console::parse_argument(argc, argv, "-volume_resolution",volume_resolution);
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cld (new pcl::PointCloud<pcl::PointXYZ>);
 	if(pcl::io::loadPCDFile<pcl::PointXYZ>(pc_file_str,*cld) == -1){
@@ -164,7 +168,8 @@ try
 //		return -1;
 //	}
 
-	ITMLibSettings *internalSettings = new ITMLibSettings();
+//	ITMLibSettings *internalSettings = new ITMLibSettings();
+	ITMLibSettings *internalSettings = new ITMLibSettings(volume_size,volume_resolution);
 	ITMMainEngine *mainEngine = new ITMMainEngine(internalSettings, &imageSource->calib, cld, output_file_name, imageSource->getRGBImageSize(), imageSource->getDepthImageSize());
 //	int rgb_size[2] = {640,480}; int depth_size[2] = {640,480};
 //    ITMMainEngine *mainEngine = new ITMMainEngine(internalSettings, &imageSource->calib, rgb_size, depth_size);

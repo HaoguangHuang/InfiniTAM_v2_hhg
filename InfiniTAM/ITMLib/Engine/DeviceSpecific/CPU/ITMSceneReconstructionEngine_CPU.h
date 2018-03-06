@@ -52,7 +52,7 @@ namespace ITMLib
 
 			void build_volume_for_warped_pointcloud(pcl::PointCloud<pcl::PointXYZ>::Ptr warped_cloud,
 													ITMScene<TVoxel, ITMPlainVoxelArray> *_warped_scene,
-													float voxelSize);
+													float voxelSize, unsigned int vol_resolution);
 
 			ITMSceneReconstructionEngine_CPU(void);
 			~ITMSceneReconstructionEngine_CPU(void);

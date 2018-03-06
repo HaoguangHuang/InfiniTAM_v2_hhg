@@ -35,7 +35,9 @@ namespace ITMLib
 			ITMGlobalCache<TVoxel> *globalCache;
 
 			ITMScene(const ITMSceneParams *sceneParams, bool useSwapping, MemoryDeviceType memoryType)
-				: index(memoryType), localVBA(memoryType, index.getNumAllocatedVoxelBlocks(), index.getVoxelBlockSize())
+//				: index(memoryType),
+				: index(memoryType, sceneParams->vol_resolution),
+				  localVBA(memoryType, index.getNumAllocatedVoxelBlocks(), index.getVoxelBlockSize())
 			{
 				this->sceneParams = sceneParams;
 				this->useSwapping = useSwapping;

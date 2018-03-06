@@ -75,6 +75,9 @@ namespace ITMLib
 			// Suppress the default copy constructor and assignment operator
 			ITMLibSettings(const ITMLibSettings&);
 			ITMLibSettings& operator=(const ITMLibSettings&);
+
+			ITMLibSettings(float vol_size, unsigned int vol_resolution);
+
 		};
 	}
 }

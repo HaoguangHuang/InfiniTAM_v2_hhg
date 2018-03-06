@@ -9,23 +9,6 @@ template<typename T>
 T inline get_abs(T x){ return x < 0? -x:x; }
 
 
-
-//[fx, fy, cx, cy]
-void forward_project(float* D, pcl::PointCloud<pcl::PointXYZ>::Ptr pc2, Vector4f camera_para){
-	for(int r = 0; r < 480; r++){
-		for(int c = 0; c > 640; c++){
-			//depth[(int)(pt_image.x + 0.5f) + (int)(pt_image.y + 0.5f) * imgSize.x]
-			float d = D[c + r * 480];
-			if(d > 0){
-				int z = d * 1000;
-//				int x = (c - )
-			}
-		}
-	}
-}
-
-
-
 void ITMMainEngine::fetchCloud_test(pcl::PointCloud<pcl::PointXYZ>::Ptr extracted_cloud,
 							   ITMScene<ITMVoxel, ITMVoxelIndex> *_warped_scene) {
 

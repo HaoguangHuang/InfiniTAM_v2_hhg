@@ -87,7 +87,7 @@ template<class TVoxel>
 void ITMSceneReconstructionEngine_CPU
 		<TVoxel, ITMPlainVoxelArray>::build_volume_for_warped_pointcloud(pcl::PointCloud<pcl::PointXYZ>::Ptr warped_cloud,
 																		ITMScene<TVoxel, ITMPlainVoxelArray> *_warped_scene,
-																		float voxelSize){
+																		float voxelSize, unsigned int vol_resolution){
 	//find center of warped_cloud
 	pcl::PointCloud<pcl::PointXYZ>::Ptr locId_pc(new pcl::PointCloud<pcl::PointXYZ>);
 
@@ -95,7 +95,8 @@ void ITMSceneReconstructionEngine_CPU
 	for(int i = 0; i < warped_cloud->size(); i++){
 		Eigen::Vector3f warped_pt(warped_cloud->points[i].x, warped_cloud->points[i].y, warped_cloud->points[i].z);
 		Eigen::Vector3f id1(warped_pt[0]/voxelSize/1000, warped_pt[1]/voxelSize/1000, warped_pt[2]/voxelSize/1000); //m
-		Eigen::Vector3f offset(256,256,0);
+//		Eigen::Vector3f offset(256,256,0);
+		Eigen::Vector3f offset(vol_resolution/2,vol_resolution/2,0);
 		Eigen::Vector3f res = id1 + offset;
 		pcl::PointXYZ locId(int(res[0]+0.5), int(res[1]+0.5), int(res[2]+0.5));
 		locId_pc->push_back(locId);
@@ -107,7 +108,8 @@ void ITMSceneReconstructionEngine_CPU
 		unsigned short y = locId_pc->points[i].y;
 		unsigned short z = locId_pc->points[i].z;
 
-		if (x < 0 || x > 511 || y < 0 || y > 511 || z < 0 || z > 511) continue;
+//		if (x < 0 || x > 511 || y < 0 || y > 511 || z < 0 || z > 511) continue;
+		if (x < 0 || x > vol_resolution-1 || y < 0 || y > vol_resolution-1 || z < 0 || z > vol_resolution-1) continue;
 
 		//if corresponding voxel is not empty
 		int locId = _warped_scene->index.getVolumeSize().x * _warped_scene->index.getVolumeSize().y * z +
@@ -541,6 +543,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::_warped_Integ
 	Vector2i rgbImgSize = view->rgb->noDims;
 	Vector2i depthImgSize = view->depth->noDims;
 	float voxelSize = scene->sceneParams->voxelSize;
+    float vol_resolution = scene->sceneParams->vol_resolution;
 
 //	Matrix4f M_d, M_rgb;
 	Vector4f projParams_d, projParams_rgb;
@@ -565,10 +568,7 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::_warped_Integ
 	//new volume for warped cloud is stored in pointer *scene
 	ITMScene<TVoxel, ITMPlainVoxelArray> scene_backup(scene->sceneParams, scene->useSwapping, MEMORYDEVICE_CPU);
 
-	build_volume_for_warped_pointcloud(warped_cloud, warped_scene, voxelSize);
-
-
-
+	build_volume_for_warped_pointcloud(warped_cloud, warped_scene, voxelSize, vol_resolution);
 
 
 	scene = warped_scene;
