@@ -77,72 +77,72 @@ void ITMMainEngine::fetchCloud_test(pcl::PointCloud<pcl::PointXYZ>::Ptr extracte
 
 
 
-
-void ITMMainEngine::fetchCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr extracted_cloud,
-							   ITMScene<ITMVoxel, ITMVoxelIndex> *_warped_scene) {
-
-    int volume_x = _warped_scene->index.getVolumeSize().x;
-	int volume_y = _warped_scene->index.getVolumeSize().y;
-	int volume_z = _warped_scene->index.getVolumeSize().z;
-
-//	const int DIVISOR = 32767;
-
-#define FETCH(x, y, z) (_warped_scene->localVBA.GetVoxelBlocks()[(x) + (y) *volume_x + (z) * volume_x * volume_y])
-
-	Eigen::Array3f cell_size(_warped_scene->sceneParams->voxelSize);
-
-    Eigen::Vector3f translation_volumeCoo_to_liveFrameCoo(-volume_x*cell_size[0]/2, -volume_y*cell_size[1]/2, 0);
-
-
-/*openMP shoule be opened*/
-#ifdef WITH_OPENMP
-#pragma omp parallel for
-#endif
-	for (int x = 1; x < volume_x-1; x++){
-		for (int y = 1; y < volume_y-1; y++){
-			for (int z = 0; z < volume_z-1; z++){
-				ITMVoxel voxel_tmp = FETCH(x, y, z);
-                float F = ITMVoxel::SDF_valueToFloat(voxel_tmp.sdf); //[0,32767]
-				int W = voxel_tmp.w_depth;//{0,1}  after integraing the live frame, W of allocated voxels should not be zero anymore
-
-				if (W == 0 || F == 1) continue;
-
-				Eigen::Vector3f V = ((Eigen::Array3i(x,y,z).cast<float>() + Eigen::Array3f(0.5f))*cell_size).matrix();
-
-				int dz = 1;
-				for (int dy = -1; dy < 2; dy++){
-					for (int dx = -1; dx < 2; dx++){
-						ITMVoxel voxel = FETCH(x+dx, y+dy, z+dz);
-                        float Fn = ITMVoxel::SDF_valueToFloat(voxel.sdf); //[0,32767]
-						int Wn = voxel.w_depth;
-
-                        if (Wn == 0 || Fn == 1) continue;
-
-                        if (F * Fn <= 0){
-                            Eigen::Vector3f Vn = ((Eigen::Array3i (x+dx, y+dy, z+dz).cast<float>() + Eigen::Array3f(0.5f)) * cell_size).matrix();
-                            Eigen::Vector3f point;
-                            if (F == 0 && Fn ==0){//in volume coo
-                                point = (V + Vn) / 2;
-                            }
-                            else{
-                                point = (V * (float)abs (Fn) + Vn * (float)abs (F)) / (float)(abs (F) + abs (Fn));
-                            }
-
-
-                            point = (point + translation_volumeCoo_to_liveFrameCoo) * 1000; //mm
-
-                            pcl::PointXYZ xyz(point[0],point[1],point[2]);
-
-                            extracted_cloud->push_back(xyz);
-                        }
-					}
-				}
-			}
-		}
-	}
-
-
-}
+//
+//void ITMMainEngine::fetchCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr extracted_cloud,
+//							   ITMScene<ITMVoxel, ITMVoxelIndex> *_warped_scene) {
+//
+//    int volume_x = _warped_scene->index.getVolumeSize().x;
+//	int volume_y = _warped_scene->index.getVolumeSize().y;
+//	int volume_z = _warped_scene->index.getVolumeSize().z;
+//
+////	const int DIVISOR = 32767;
+//
+//#define FETCH(x, y, z) (_warped_scene->localVBA.GetVoxelBlocks()[(x) + (y) *volume_x + (z) * volume_x * volume_y])
+//
+//	Eigen::Array3f cell_size(_warped_scene->sceneParams->voxelSize);
+//
+//    Eigen::Vector3f translation_volumeCoo_to_liveFrameCoo(-volume_x*cell_size[0]/2, -volume_y*cell_size[1]/2, 0);
+//
+//
+///*openMP shoule be opened*/
+//#ifdef WITH_OPENMP
+//#pragma omp parallel for
+//#endif
+//	for (int x = 1; x < volume_x-1; x++){
+//		for (int y = 1; y < volume_y-1; y++){
+//			for (int z = 0; z < volume_z-1; z++){
+//				ITMVoxel voxel_tmp = FETCH(x, y, z);
+//                float F = ITMVoxel::SDF_valueToFloat(voxel_tmp.sdf); //[0,32767]
+//				int W = voxel_tmp.w_depth;//{0,1}  after integraing the live frame, W of allocated voxels should not be zero anymore
+//
+//				if (W == 0 || F == 1) continue;
+//
+//				Eigen::Vector3f V = ((Eigen::Array3i(x,y,z).cast<float>() + Eigen::Array3f(0.5f))*cell_size).matrix();
+//
+//				int dz = 1;
+//				for (int dy = -1; dy < 2; dy++){
+//					for (int dx = -1; dx < 2; dx++){
+//						ITMVoxel voxel = FETCH(x+dx, y+dy, z+dz);
+//                        float Fn = ITMVoxel::SDF_valueToFloat(voxel.sdf); //[0,32767]
+//						int Wn = voxel.w_depth;
+//
+//                        if (Wn == 0 || Fn == 1) continue;
+//
+//                        if (F * Fn <= 0){
+//                            Eigen::Vector3f Vn = ((Eigen::Array3i (x+dx, y+dy, z+dz).cast<float>() + Eigen::Array3f(0.5f)) * cell_size).matrix();
+//                            Eigen::Vector3f point;
+//                            if (F == 0 && Fn ==0){//in volume coo
+//                                point = (V + Vn) / 2;
+//                            }
+//                            else{
+//                                point = (V * (float)abs (Fn) + Vn * (float)abs (F)) / (float)(abs (F) + abs (Fn));
+//                            }
+//
+//
+//                            point = (point + translation_volumeCoo_to_liveFrameCoo) * 1000; //mm
+//
+//                            pcl::PointXYZ xyz(point[0],point[1],point[2]);
+//
+//                            extracted_cloud->push_back(xyz);
+//                        }
+//					}
+//				}
+//			}
+//		}
+//	}
+//
+//
+//}
 
 
 
