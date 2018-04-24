@@ -578,27 +578,27 @@ void ITMSceneReconstructionEngine_CPU<TVoxel, ITMPlainVoxelArray>::_warped_Integ
 	const ITMPlainVoxelArray::IndexData *arrayInfo = scene->index.getIndexData();
 
 
-#ifdef WITH_OPENMP
-#pragma omp parallel for
-#endif
-	for (int locId = 0; locId < scene->index.getVolumeSize().x*scene->index.getVolumeSize().y*scene->index.getVolumeSize().z; ++locId)
-	{//locid:traverse the whole voxels in volume one by one
-		int z = locId / (scene->index.getVolumeSize().x*scene->index.getVolumeSize().y);
-		int tmp = locId - z * scene->index.getVolumeSize().x*scene->index.getVolumeSize().y;
-		int y = tmp / scene->index.getVolumeSize().x;
-		int x = tmp - y * scene->index.getVolumeSize().x;
-		Vector4f pt_model;
-
-		if (stopIntegratingAtMaxW) if (voxelArray[locId].w_depth == maxW) continue;
-		//if (approximateIntegration) if (voxelArray[locId].w_depth != 0) continue;
-
-		pt_model.x = (float)(x + arrayInfo->offset.x) * voxelSize;
-		pt_model.y = (float)(y + arrayInfo->offset.y) * voxelSize;
-		pt_model.z = (float)(z + arrayInfo->offset.z) * voxelSize;
-		pt_model.w = 1.0f;
-		//per voxel
-		ComputeUpdatedVoxelInfo<TVoxel::hasColorInformation,TVoxel>::compute(voxelArray[locId], pt_model, M_d, projParams_d, M_rgb, projParams_rgb, mu, maxW,
-																			 depth, depthImgSize, rgb, rgbImgSize); //tsdf fusion
-	}
+//#ifdef WITH_OPENMP
+//#pragma omp parallel for
+//#endif
+//	for (int locId = 0; locId < scene->index.getVolumeSize().x*scene->index.getVolumeSize().y*scene->index.getVolumeSize().z; ++locId)
+//	{//locid:traverse the whole voxels in volume one by one
+//		int z = locId / (scene->index.getVolumeSize().x*scene->index.getVolumeSize().y);
+//		int tmp = locId - z * scene->index.getVolumeSize().x*scene->index.getVolumeSize().y;
+//		int y = tmp / scene->index.getVolumeSize().x;
+//		int x = tmp - y * scene->index.getVolumeSize().x;
+//		Vector4f pt_model;
+//
+//		if (stopIntegratingAtMaxW) if (voxelArray[locId].w_depth == maxW) continue;
+//		//if (approximateIntegration) if (voxelArray[locId].w_depth != 0) continue;
+//
+//		pt_model.x = (float)(x + arrayInfo->offset.x) * voxelSize;
+//		pt_model.y = (float)(y + arrayInfo->offset.y) * voxelSize;
+//		pt_model.z = (float)(z + arrayInfo->offset.z) * voxelSize;
+//		pt_model.w = 1.0f;
+//		//per voxel
+//		ComputeUpdatedVoxelInfo<TVoxel::hasColorInformation,TVoxel>::compute(voxelArray[locId], pt_model, M_d, projParams_d, M_rgb, projParams_rgb, mu, maxW,
+//																			 depth, depthImgSize, rgb, rgbImgSize); //tsdf fusion
+//	}
 }
 

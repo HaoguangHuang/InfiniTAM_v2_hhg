@@ -41,8 +41,10 @@ void ITMMainEngine::fetchCloud_test(pcl::PointCloud<pcl::PointXYZ>::Ptr extracte
 				Eigen::Vector3f V = ((Eigen::Array3i(x,y,z).cast<float>() + Eigen::Array3f(0.5f))*cell_size).matrix();
 
 				int dz = 1;
-				for (int dy = -1; dy < 2; dy++){
-					for (int dx = -1; dx < 2; dx++){
+				//for (int dy = -1; dy < 2; dy++){
+					//for (int dx = -1; dx < 2; dx++){
+                for (int dy = 0; dy < 1; dy++){
+                    for (int dx = 0; dx < 1; dx++){
 						ITMVoxel voxel = FETCH(x+dx, y+dy, z+dz);
 						float Fn = ITMVoxel::SDF_valueToFloat(voxel.sdf); //[0,32767]
 						int Wn = voxel.w_depth;
@@ -53,9 +55,58 @@ void ITMMainEngine::fetchCloud_test(pcl::PointCloud<pcl::PointXYZ>::Ptr extracte
 							Eigen::Vector3f Vn = ((Eigen::Array3i (x+dx, y+dy, z+dz).cast<float>() + Eigen::Array3f(0.5f)) * cell_size).matrix();
 							Eigen::Vector3f point;
 							if (F == 0 && Fn ==0){//in volume coo
-								point = (V + Vn) / 2;
+#if 0
+                                {
+                                    int cnt = 0; int F[8];
+                                    ITMVoxel voxel1 = FETCH(x+2, y, z);
+                                    F[0] = ITMVoxel::SDF_valueToFloat(voxel1.sdf); //[0,32767]
+                                    voxel1 = FETCH(x-2, y, z);
+                                    F[1] = ITMVoxel::SDF_valueToFloat(voxel1.sdf); //[0,32767]
+                                    voxel1 = FETCH(x, y+2, z);
+                                    F[2] = ITMVoxel::SDF_valueToFloat(voxel1.sdf); //[0,32767]
+                                    voxel1 = FETCH(x, y-2, z);
+                                    F[3] = ITMVoxel::SDF_valueToFloat(voxel1.sdf); //[0,32767]
+                                    voxel1 = FETCH(x+2, y+2, z);
+                                    F[4] = ITMVoxel::SDF_valueToFloat(voxel1.sdf); //[0,32767]
+                                    voxel1 = FETCH(x-2, y-2, z);
+                                    F[5] = ITMVoxel::SDF_valueToFloat(voxel1.sdf); //[0,32767]
+                                    voxel1 = FETCH(x-2, y+2, z);
+                                    F[6] = ITMVoxel::SDF_valueToFloat(voxel1.sdf); //[0,32767]
+                                    voxel1 = FETCH(x+2, y-2, z);
+                                    F[7] = ITMVoxel::SDF_valueToFloat(voxel1.sdf); //[0,32767]
+                                    for(int i=0; i < 8; i++)
+                                        if(F[i]==0) cnt++;
+                                    if(cnt < 1) continue;
+                                }
+#endif
+                                point = (V + Vn) / 2;
 							}
-							else{
+							else{ //(F==0,Fn!=0) or (F!=0,Fn==0)
+#if 0
+                                //check nearest voxel to find noise
+                                {
+                                    int cnt = 0; int F[8];
+                                    ITMVoxel voxel1 = FETCH(x+2, y, z);
+                                    F[0] = ITMVoxel::SDF_valueToFloat(voxel1.sdf); //[0,32767]
+                                    voxel1 = FETCH(x-2, y, z);
+                                    F[1] = ITMVoxel::SDF_valueToFloat(voxel1.sdf); //[0,32767]
+                                    voxel1 = FETCH(x, y+2, z);
+                                    F[2] = ITMVoxel::SDF_valueToFloat(voxel1.sdf); //[0,32767]
+                                    voxel1 = FETCH(x, y-2, z);
+                                    F[3] = ITMVoxel::SDF_valueToFloat(voxel1.sdf); //[0,32767]
+                                    voxel1 = FETCH(x+2, y+2, z);
+                                    F[4] = ITMVoxel::SDF_valueToFloat(voxel1.sdf); //[0,32767]
+                                    voxel1 = FETCH(x-2, y-2, z);
+                                    F[5] = ITMVoxel::SDF_valueToFloat(voxel1.sdf); //[0,32767]
+                                    voxel1 = FETCH(x-2, y+2, z);
+                                    F[6] = ITMVoxel::SDF_valueToFloat(voxel1.sdf); //[0,32767]
+                                    voxel1 = FETCH(x+2, y-2, z);
+                                    F[7] = ITMVoxel::SDF_valueToFloat(voxel1.sdf); //[0,32767]
+                                    for(int i=0; i < 8; i++)
+                                        if(F[i]==0) cnt++;
+                                    if(cnt < 1) continue;
+//                              }
+#endif
                                 point = (V * float(get_abs(Fn)) + Vn * float(get_abs(F))) / float(get_abs(F) + get_abs(Fn));
 							}
 
@@ -289,12 +340,13 @@ void ITMMainEngine::ProcessFrame(ITMUChar4Image *rgbImage, ITMShortImage *rawDep
 
     /*output extracted_cloud*/
 	pcl::io::savePCDFileBinary(this->output_file_name, *extracted_cloud);
+    exit(0);
 
 	// fusions
-	if (fusionActive) denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
+	//if (fusionActive) denseMapper->ProcessFrame(view, trackingState, scene, renderState_live);
 
 	// raycast to renderState_live for tracking and free visualisation
-	trackingController->Prepare(trackingState, view, renderState_live);
+	//trackingController->Prepare(trackingState, view, renderState_live);
 
 
 }
